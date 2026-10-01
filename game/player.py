@@ -16,6 +16,9 @@ class Player:
         return pygame.Rect(self.x, self.y, self.width, self.height)
 
     def jump(self):
+        """Jump if standing on something. Returns True if a jump happened."""
         if self.on_ground:
             self.vy = self.jump_strength
             self.on_ground = False
+            return True
+        return False

@@ -2,6 +2,7 @@ import pygame
 from .player import Player
 from .platform import Platform
 from .hazard import Hazard
+from .sounds import SoundManager
 
 # Game Engine
 
@@ -56,6 +57,7 @@ class GameEngine:
         self.font = pygame.font.SysFont("Arial", 30)
         self.title_font = pygame.font.SysFont("Arial", 72, bold=True)
         self.small_font = pygame.font.SysFont("Arial", 24)
+        self.sounds = SoundManager()
 
         self.reset(DEFAULT_DIFFICULTY)
 
@@ -85,7 +87,8 @@ class GameEngine:
             return
 
         if event.key in (pygame.K_SPACE, pygame.K_UP, pygame.K_w):
-            self.player.jump()
+            if self.player.jump():
+                self.sounds.play("jump")
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
@@ -126,6 +129,7 @@ class GameEngine:
 
         if self.player.x >= self.goal_x:
             self.score += 1
+            self.sounds.play("goal")
             self.player.x, self.player.y = self.start_x, self.start_y
             self.player.vy = 0
 
@@ -133,6 +137,7 @@ class GameEngine:
         self.game_over = True
         self.game_over_reason = reason
         self.player.vx = 0
+        self.sounds.play("death")
 
     def _land_on_platforms(self, prev_bottom):
         """Land the player on the highest platform whose top surface they

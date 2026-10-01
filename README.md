@@ -84,6 +84,7 @@ simple-platformer-main/
 ├── game/
 │   ├── game_engine.py
 │   ├── player.py
+│   ├── sounds.py
 │   ├── platform.py
 │   └── hazard.py
 └── README.md
