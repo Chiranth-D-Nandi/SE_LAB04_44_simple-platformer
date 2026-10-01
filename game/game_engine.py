@@ -10,6 +10,22 @@ BROWN = (150, 100, 60)
 RED = (220, 60, 60)
 GREEN = (0, 200, 0)
 
+# Difficulty presets: heavier gravity = shorter, snappier jumps (harder).
+# Values were checked with a brute-force solver so every level is beatable.
+DIFFICULTIES = {
+    "Easy":   {"gravity": 0.4, "jump_strength": -13},
+    "Medium": {"gravity": 0.6, "jump_strength": -12},
+    "Hard":   {"gravity": 0.7, "jump_strength": -12},
+}
+DEFAULT_DIFFICULTY = "Medium"
+
+# Game-over menu: number keys (main row and keypad) -> difficulty.
+MENU_KEYS = {
+    pygame.K_1: "Easy", pygame.K_KP1: "Easy",
+    pygame.K_2: "Medium", pygame.K_KP2: "Medium",
+    pygame.K_3: "Hard", pygame.K_KP3: "Hard",
+}
+
 # Fastest the player may fall, in pixels per frame. Kept well below
 # (platform height + player height) so even a naive overlap check could not
 # skip a platform; the swept check below makes landings reliable regardless.
@@ -21,10 +37,8 @@ class GameEngine:
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.gravity = 0.6
 
         self.start_x, self.start_y = 40, height - 120
-        self.player = Player(self.start_x, self.start_y)
 
         # A simple hand-built level: platforms with gaps between them
         # (falling into a gap means falling off the bottom of the
@@ -39,10 +53,22 @@ class GameEngine:
         self.hazards = [Hazard(240, ground_y - 14, 100)]
         self.goal_x = 740
 
-        self.score = 0
         self.font = pygame.font.SysFont("Arial", 30)
         self.title_font = pygame.font.SysFont("Arial", 72, bold=True)
         self.small_font = pygame.font.SysFont("Arial", 24)
+
+        self.reset(DEFAULT_DIFFICULTY)
+
+    def reset(self, difficulty):
+        """Start a fresh run at the given difficulty ("Easy"/"Medium"/"Hard")."""
+        settings = DIFFICULTIES[difficulty]
+        self.difficulty = difficulty
+        self.gravity = settings["gravity"]
+
+        self.player = Player(self.start_x, self.start_y)
+        self.player.jump_strength = settings["jump_strength"]
+
+        self.score = 0
         self.game_over = False
         self.game_over_reason = ""
 
@@ -51,8 +77,10 @@ class GameEngine:
             return
 
         if self.game_over:
-            # Game-over screen: wait for the player to choose what to do.
-            if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_ESCAPE):
+            # Game-over menu: pick a difficulty to play again, or exit.
+            if event.key in MENU_KEYS:
+                self.reset(MENU_KEYS[event.key])
+            elif event.key in (pygame.K_ESCAPE, pygame.K_q):
                 pygame.event.post(pygame.event.Event(pygame.QUIT))
             return
 
@@ -147,6 +175,8 @@ class GameEngine:
 
         score_text = self.font.render(f"Score: {self.score}", True, WHITE)
         screen.blit(score_text, (10, 10))
+        diff_text = self.small_font.render(f"Difficulty: {self.difficulty}", True, WHITE)
+        screen.blit(diff_text, diff_text.get_rect(topright=(self.width - 10, 14)))
 
         if self.game_over:
             self._render_game_over(screen)
@@ -159,10 +189,14 @@ class GameEngine:
 
         cx = self.width // 2
         lines = [
-            (self.title_font, "GAME OVER", RED, 120),
-            (self.small_font, self.game_over_reason, WHITE, 185),
-            (self.font, f"Final Score: {self.score}", WHITE, 235),
-            (self.small_font, "Press ENTER or ESC to exit", WHITE, 330),
+            (self.title_font, "GAME OVER", RED, 90),
+            (self.small_font, self.game_over_reason, WHITE, 150),
+            (self.font, f"Final Score: {self.score}", WHITE, 195),
+            (self.font, "Play again - choose a difficulty:", WHITE, 270),
+            (self.small_font, "1 - Easy", GREEN, 315),
+            (self.small_font, "2 - Medium", GREEN, 350),
+            (self.small_font, "3 - Hard", GREEN, 385),
+            (self.small_font, "ESC or Q - Exit", WHITE, 435),
         ]
         for font, text, color, y in lines:
             surf = font.render(text, True, color)
