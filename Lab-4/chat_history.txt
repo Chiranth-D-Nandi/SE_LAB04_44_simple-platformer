@@ -1,0 +1,238 @@
+SOFTWARE ENGINEERING LAB 4
+AI ASSISTANCE CHAT HISTORY — PROFESSIONALIZED RECONSTRUCTION
+
+IMPORTANT NOTE
+This document is a professionalized reconstruction of the prompts used during the
+development session. It is NOT a verbatim transcript of the original chat.
+The actual chat transcript/share link should be submitted separately if the
+course requires the original conversation.
+
+======================================================================
+PROMPT 1 — REPOSITORY SETUP AND INITIAL ANALYSIS
+======================================================================
+
+I am working on a Software Engineering Lab 4 assignment involving an existing
+simple platformer repository.
+
+Please help me set up the repository correctly before making any changes.
+
+Requirements:
+1. Identify the correct repository structure.
+2. Fork the provided repository into my GitHub account.
+3. Clone my fork locally using PowerShell.
+4. Verify that the expected files (such as main.py, requirements.txt and the
+   game directory) are present.
+5. Install the required dependencies.
+6. Run the original implementation without modifications.
+7. Help me record a "before" demonstration so that the original behaviour is
+   documented before changes are introduced.
+8. Do not modify the project until the original version has been successfully
+   executed and verified.
+
+If any command fails, explain the cause and provide the corrected command
+before proceeding.
+
+======================================================================
+PROMPT 2 — IMPLEMENT THE FOUR LAB TASKS
+======================================================================
+
+The original platformer has now been cloned and the baseline demonstration has
+been recorded.
+
+Please help me implement the four required Lab 4 tasks systematically.
+
+Tasks:
+1. Fix platform collision tunneling using an appropriate swept landing check
+   and implement a suitable terminal-velocity limit.
+2. Add a Game Over screen that displays the final score and waits for user
+   input.
+3. Add replay functionality with Easy, Medium and Hard difficulty selection,
+   as well as an option to exit.
+4. Add jump, goal and death sound effects. The sounds should be synthesized
+   programmatically rather than requiring external audio assets.
+
+Development requirements:
+- Inspect the existing architecture before modifying it.
+- Preserve existing functionality unless a change is necessary for one of
+  the requirements.
+- Keep each task independently identifiable in the Git history.
+- Explain the implementation rationale briefly before applying each change.
+- Prefer the smallest maintainable change that satisfies the requirement.
+- Avoid unnecessary dependencies and external assets.
+- After each major change, verify that the project still runs.
+
+Create one Git commit per task with clear, descriptive commit messages.
+
+======================================================================
+PROMPT 3 — COLLISION FIX
+======================================================================
+
+Analyze the platform collision system and identify why the player can pass
+through platforms during fast downward movement.
+
+Implement a robust landing/collision check that prevents tunneling while
+preserving normal movement and jumping behaviour.
+
+Also add a reasonable terminal-velocity constraint so that extremely large
+downward movement does not undermine the collision logic.
+
+Before implementation:
+- Explain the existing failure mode.
+- Explain why the proposed collision approach addresses it.
+- Mention any relevant edge cases.
+
+After implementation:
+- Run the game.
+- Verify normal jumping and landing.
+- Verify that high-speed downward movement does not allow the player to pass
+  through platforms.
+
+Commit this change separately as Task 1.
+
+======================================================================
+PROMPT 4 — GAME OVER SYSTEM
+======================================================================
+
+Implement a proper Game Over state for the platformer.
+
+Requirements:
+- Detect the relevant death conditions already used by the game.
+- Stop normal gameplay when the player dies.
+- Display a Game Over screen.
+- Display the player's final score.
+- Wait for an appropriate user input before continuing.
+- Preserve the existing score calculation.
+
+Please integrate the feature into the existing game-state structure rather
+than adding an unrelated parallel system.
+
+Test:
+1. Trigger a death condition.
+2. Confirm that the Game Over screen appears.
+3. Confirm that the final score is displayed.
+4. Confirm that the game responds correctly to the required input.
+
+Commit this change separately as Task 2.
+
+======================================================================
+PROMPT 5 — REPLAY AND DIFFICULTY SELECTION
+======================================================================
+
+Extend the Game Over/replay flow to support replaying the game with selectable
+difficulty levels.
+
+Required difficulty options:
+- Easy
+- Medium
+- Hard
+
+Requirements:
+- Provide a clear way to select a difficulty after Game Over.
+- Provide an option to exit the game.
+- Ensure that restarting creates a clean game state.
+- Make the difficulty differences observable in gameplay.
+- Display the currently selected difficulty where appropriate.
+- Ensure that difficulty selection does not corrupt score, player state or
+  other game variables from the previous run.
+
+Please explain briefly which gameplay parameters are affected by difficulty
+and why those parameters were selected.
+
+Test every difficulty at least once and verify that replay and exit work.
+
+Commit this change separately as Task 3.
+
+======================================================================
+PROMPT 6 — SOUND EFFECTS
+======================================================================
+
+Add sound effects for the following gameplay events:
+
+1. Player jump
+2. Player reaches the goal
+3. Player dies
+
+Constraints:
+- Do not require downloaded audio assets.
+- Generate or synthesize the sounds programmatically.
+- Keep the implementation lightweight.
+- Avoid introducing unnecessary external dependencies.
+
+Integrate the sounds with the existing event/state logic so that each effect
+plays at the appropriate event rather than continuously during a frame loop.
+
+Test each event independently and confirm that the sounds do not interfere
+with gameplay.
+
+Commit this change separately as Task 4.
+
+======================================================================
+PROMPT 7 — FINAL VALIDATION
+======================================================================
+
+The four implementation tasks are complete.
+
+Please perform a final validation of the project before submission.
+
+Check:
+- The project launches successfully.
+- Normal movement works.
+- Jumping works.
+- Platform collision no longer tunnels.
+- Terminal velocity behaves correctly.
+- Death conditions work.
+- Game Over displays the final score.
+- Replay works.
+- Easy, Medium and Hard difficulty options work.
+- Exit functionality works.
+- Jump, goal and death sounds trigger at the correct events.
+- No required external assets are missing.
+- The repository has four separate task commits.
+- The working tree is clean except for intentionally untracked submission
+  files.
+
+After validation, provide a concise checklist of what was verified and identify
+anything that still needs attention.
+
+======================================================================
+PROMPT 8 — GIT SUBMISSION
+======================================================================
+
+The implementation and testing are complete.
+
+Please guide me through the final Git submission process without modifying
+the task commits.
+
+Requirements:
+1. Verify the current branch and remote.
+2. Verify the commit history.
+3. Push the four implementation commits.
+4. Create the required Lab-4 submission directory if needed.
+5. Add the before/after demonstration videos.
+6. Add the required chat-history documentation.
+7. Commit the submission files separately from the implementation commits.
+8. Push the final submission.
+
+Use clear commit messages and explain what each command does.
+
+Do not rewrite or squash the four task commits because their separation is
+useful for demonstrating the development history.
+
+======================================================================
+ENGINEERING APPROACH USED
+======================================================================
+
+The development process followed this sequence:
+
+1. Establish the original repository and verify the baseline.
+2. Record the original behaviour before modifications.
+3. Implement each requirement independently.
+4. Test each feature after implementation.
+5. Keep Task 1–4 changes in separate commits.
+6. Record the final implementation in an after-demonstration.
+7. Push the implementation history.
+8. Add submission artifacts separately.
+
+This document is intended as a polished representation of the engineering
+prompts and workflow. It should not be treated as the verbatim transcript of
+the original conversation.
