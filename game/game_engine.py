@@ -41,15 +41,29 @@ class GameEngine:
 
         self.score = 0
         self.font = pygame.font.SysFont("Arial", 30)
+        self.title_font = pygame.font.SysFont("Arial", 72, bold=True)
+        self.small_font = pygame.font.SysFont("Arial", 24)
         self.game_over = False
+        self.game_over_reason = ""
 
     def handle_event(self, event):
-        if event.type == pygame.KEYDOWN and event.key in (pygame.K_SPACE, pygame.K_UP, pygame.K_w):
+        if event.type != pygame.KEYDOWN:
+            return
+
+        if self.game_over:
+            # Game-over screen: wait for the player to choose what to do.
+            if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_ESCAPE):
+                pygame.event.post(pygame.event.Event(pygame.QUIT))
+            return
+
+        if event.key in (pygame.K_SPACE, pygame.K_UP, pygame.K_w):
             self.player.jump()
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
         self.player.vx = 0
+        if self.game_over:
+            return
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.player.vx = -self.player.speed
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
@@ -75,17 +89,22 @@ class GameEngine:
 
         for hazard in self.hazards:
             if self.player.rect().colliderect(hazard.rect()):
-                self.game_over = True
+                self._trigger_game_over("You touched a hazard!")
                 return
 
         if self.player.y > self.height:
-            self.game_over = True
+            self._trigger_game_over("You fell off the screen!")
             return
 
         if self.player.x >= self.goal_x:
             self.score += 1
             self.player.x, self.player.y = self.start_x, self.start_y
             self.player.vy = 0
+
+    def _trigger_game_over(self, reason):
+        self.game_over = True
+        self.game_over_reason = reason
+        self.player.vx = 0
 
     def _land_on_platforms(self, prev_bottom):
         """Land the player on the highest platform whose top surface they
@@ -129,7 +148,22 @@ class GameEngine:
         score_text = self.font.render(f"Score: {self.score}", True, WHITE)
         screen.blit(score_text, (10, 10))
 
-        if self.game_over and not getattr(self, "_game_over_logged", False):
-            # NOTE: no proper game-over screen yet - see Task 2 in the README.
-            print("Game over! Final score:", self.score)
-            self._game_over_logged = True
+        if self.game_over:
+            self._render_game_over(screen)
+
+    def _render_game_over(self, screen):
+        # Dim the frozen scene so the message stands out.
+        overlay = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 160))
+        screen.blit(overlay, (0, 0))
+
+        cx = self.width // 2
+        lines = [
+            (self.title_font, "GAME OVER", RED, 120),
+            (self.small_font, self.game_over_reason, WHITE, 185),
+            (self.font, f"Final Score: {self.score}", WHITE, 235),
+            (self.small_font, "Press ENTER or ESC to exit", WHITE, 330),
+        ]
+        for font, text, color, y in lines:
+            surf = font.render(text, True, color)
+            screen.blit(surf, surf.get_rect(center=(cx, y)))
