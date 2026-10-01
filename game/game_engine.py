@@ -10,6 +10,13 @@ BROWN = (150, 100, 60)
 RED = (220, 60, 60)
 GREEN = (0, 200, 0)
 
+# Fastest the player may fall, in pixels per frame. Kept well below
+# (platform height + player height) so even a naive overlap check could not
+# skip a platform; the swept check below makes landings reliable regardless.
+MAX_FALL_SPEED = 18
+# Float tolerance when asking "were the feet at/above the platform top?"
+LANDING_EPSILON = 1
+
 class GameEngine:
     def __init__(self, width, height):
         self.width = width
@@ -52,26 +59,19 @@ class GameEngine:
         if self.game_over:
             return
 
-        self.player.vy += self.gravity
-        self.player.x = max(0, self.player.x + self.player.vx)
+        # Remember where the player's feet were BEFORE this frame's movement.
+        # Comparing "was above the platform last frame" with "is at/below
+        # its top now" catches landings even if the player moved further
+        # than the platform is thick in a single frame (swept collision).
+        prev_bottom = self.player.y + self.player.height
 
-        # NOTE: gravity has no terminal-velocity cap, so vertical speed
-        # keeps growing the longer the player falls. Collision is only
-        # checked against the player's rect *after* it has already
-        # moved for the frame - there's no check for whether the
-        # player's path crossed a platform along the way. After a
-        # long enough fall (e.g. off the elevated middle platform),
-        # a single frame's movement can carry the player from just
-        # above a platform to just below it without the two rects
-        # ever overlapping, so the platform is skipped entirely and
-        # the player falls straight through. See Task 1 in the README.
+        # Terminal velocity: stops vertical speed growing without limit.
+        self.player.vy = min(self.player.vy + self.gravity, MAX_FALL_SPEED)
+        self.player.x = max(0, self.player.x + self.player.vx)
         self.player.y += self.player.vy
+
         self.player.on_ground = False
-        for platform in self.platforms:
-            if self.player.rect().colliderect(platform.rect()) and self.player.vy >= 0:
-                self.player.y = platform.y - self.player.height
-                self.player.vy = 0
-                self.player.on_ground = True
+        self._land_on_platforms(prev_bottom)
 
         for hazard in self.hazards:
             if self.player.rect().colliderect(hazard.rect()):
@@ -86,6 +86,34 @@ class GameEngine:
             self.score += 1
             self.player.x, self.player.y = self.start_x, self.start_y
             self.player.vy = 0
+
+    def _land_on_platforms(self, prev_bottom):
+        """Land the player on the highest platform whose top surface they
+        crossed (or touched) while moving down this frame."""
+        player = self.player
+        if player.vy < 0:
+            return  # moving up: platforms are one-way, jump through them
+
+        new_bottom = player.y + player.height
+        landing = None
+        for platform in self.platforms:
+            overlaps_horizontally = (
+                player.x < platform.x + platform.width
+                and player.x + player.width > platform.x
+            )
+            if not overlaps_horizontally:
+                continue
+            was_above = prev_bottom <= platform.y + LANDING_EPSILON
+            reached_top = new_bottom >= platform.y
+            if was_above and reached_top:
+                # If several platforms were crossed, the highest one is hit first.
+                if landing is None or platform.y < landing.y:
+                    landing = platform
+
+        if landing is not None:
+            player.y = landing.y - player.height
+            player.vy = 0
+            player.on_ground = True
 
     def render(self, screen):
         for platform in self.platforms:
